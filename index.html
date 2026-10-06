@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Jom Kenal Huruf P, B dan D</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(135deg,#ffe8f1,#e8f5ff);color:#202020}
+.container{max-width:760px;margin:auto;padding:18px}
+.header{background:white;border-radius:28px;padding:20px;text-align:center;box-shadow:0 5px 18px #0002}
+h1{margin:0 0 8px;font-size:clamp(26px,6vw,42px);color:#ef3d83}
+.subtitle{font-size:18px;margin:0}
+.progress{margin-top:15px;background:#eee;border-radius:30px;height:14px;overflow:hidden}
+.progressbar{height:100%;width:0%;background:#35a9ed;transition:.3s}
+.card{margin-top:18px;background:#fff;border-radius:30px;padding:22px;box-shadow:0 5px 18px #0002;text-align:center}
+.number{font-weight:bold;color:#777;font-size:18px}
+.picture{font-size:105px;margin:12px 0 2px}
+.word{font-size:38px;font-weight:800;letter-spacing:1px}
+.instruction{font-size:19px;margin:8px 0 20px}
+.listen{border:0;border-radius:18px;background:#8b5cf6;color:white;padding:12px 18px;font-size:17px;font-weight:bold;cursor:pointer}
+.options{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.option{border:0;border-radius:22px;padding:20px 10px;font-size:48px;font-weight:900;cursor:pointer;background:#f3f4f6;box-shadow:0 4px 0 #d1d5db;transition:.12s}
+.option:active{transform:translateY(3px);box-shadow:none}
+.option.p{background:#ffd4e5;color:#e91e63}
+.option.b{background:#cfeaff;color:#1479c9}
+.option.d{background:#fff0a8;color:#b07b00}
+.feedback{min-height:34px;margin-top:18px;font-size:22px;font-weight:bold}
+.next{margin-top:12px;border:0;border-radius:18px;padding:14px 28px;background:#22a06b;color:white;font-size:18px;font-weight:bold;cursor:pointer;display:none}
+.score{margin-top:18px;font-size:20px;font-weight:bold}
+.final{display:none;text-align:center;background:white;border-radius:30px;padding:30px;box-shadow:0 5px 18px #0002;margin-top:18px}
+.restart{border:0;border-radius:18px;padding:14px 25px;background:#ef3d83;color:#fff;font-size:18px;font-weight:bold;cursor:pointer}
+.small{font-size:14px;color:#666;margin-top:15px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <h1>🌟 Jom Kenal Huruf P, B dan D 🌟</h1>
+    <p class="subtitle">Dengar perkataan, kemudian tekan huruf yang betul.</p>
+    <div class="progress"><div id="bar" class="progressbar"></div></div>
+  </div>
+
+  <div id="quiz" class="card">
+    <div class="number" id="number"></div>
+    <div class="picture" id="picture"></div>
+    <div class="word" id="word"></div>
+    <button class="listen" onclick="speakCurrent()">🔊 Dengar sebutan</button>
+    <div class="instruction">Pilih huruf yang betul:</div>
+    <div class="options">
+      <button class="option p" onclick="choose('p')">p</button>
+      <button class="option b" onclick="choose('b')">b</button>
+      <button class="option d" onclick="choose('d')">d</button>
+    </div>
+    <div id="feedback" class="feedback"></div>
+    <button id="next" class="next" onclick="nextQuestion()">Soalan Seterusnya ➜</button>
+    <div class="score" id="score"></div>
+  </div>
+
+  <div id="final" class="final">
+    <div style="font-size:70px">🏆</div>
+    <h2>Tahniah!</h2>
+    <p id="result" style="font-size:24px;font-weight:bold"></p>
+    <p>Hebat! Teruskan berlatih mengenal huruf <b>p, b</b> dan <b>d</b>.</p>
+    <button class="restart" onclick="restart()">🔄 Cuba Lagi</button>
+  </div>
+  <div class="small">Aktiviti ini sesuai dimainkan pada telefon, tablet atau komputer.</div>
+</div>
+
+<script>
+const questions = [{"emoji": "☂️", "word": "payung", "answer": "p"}, {"emoji": "⚽", "word": "bola", "answer": "b"}, {"emoji": "🍩", "word": "donat", "answer": "d"}, {"emoji": "🍃", "word": "daun", "answer": "d"}, {"emoji": "🔨", "word": "paku", "answer": "p"}, {"emoji": "🎒", "word": "beg", "answer": "b"}];
+let index=0, score=0, answered=false;
+
+function loadQuestion(){
+  answered=false;
+  const q=questions[index];
+  document.getElementById('number').textContent=`Soalan ${index+1} daripada ${questions.length}`;
+  document.getElementById('picture').textContent=q.emoji;
+  document.getElementById('word').textContent=q.word;
+  document.getElementById('feedback').textContent='';
+  document.getElementById('next').style.display='none';
+  document.getElementById('score').textContent=`Skor: ${score}`;
+  document.getElementById('bar').style.width=`${index/questions.length*100}%`;
+  setTimeout(speakCurrent,250);
+}
+
+function speakCurrent(){
+  const q=questions[index];
+  if ('speechSynthesis' in window){
+    speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(`Huruf ${q.answer}, ${q.word}`);
+    u.lang='ms-MY';
+    u.rate=0.8;
+    u.pitch=1;
+    speechSynthesis.speak(u);
+  } else {
+    alert('Fungsi suara tidak disokong oleh pelayar ini.');
+  }
+}
+
+function choose(letter){
+  if(answered) return;
+  answered=true;
+  const q=questions[index];
+  if(letter===q.answer){
+    score++;
+    document.getElementById('feedback').textContent='✅ Betul! Hebat!';
+    document.getElementById('feedback').style.color='#159447';
+  } else {
+    document.getElementById('feedback').textContent=`❌ Cuba lagi. Jawapan: ${q.answer}`;
+    document.getElementById('feedback').style.color='#d22';
+  }
+  document.getElementById('score').textContent=`Skor: ${score}`;
+  document.getElementById('next').style.display='inline-block';
+}
+
+function nextQuestion(){
+  index++;
+  if(index>=questions.length){
+    document.getElementById('quiz').style.display='none';
+    document.getElementById('final').style.display='block';
+    document.getElementById('result').textContent=`Markah kamu: ${score} / ${questions.length}`;
+    document.getElementById('bar').style.width='100%';
+  } else loadQuestion();
+}
+
+function restart(){
+  index=0;score=0;
+  document.getElementById('final').style.display='none';
+  document.getElementById('quiz').style.display='block';
+  loadQuestion();
+}
+
+loadQuestion();
+</script>
+</body>
+</html>
